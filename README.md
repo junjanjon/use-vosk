@@ -4,6 +4,11 @@
 
 ## 使い方
 
+### 動作確認
+
+- Python 3.12.6
+- macOS 14.4
+
 ### モデルをダウンロードする
 
 https://alphacephei.com/vosk/models からモデルをダウンロードする。
