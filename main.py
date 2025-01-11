@@ -2,6 +2,15 @@ import vosk
 import wave
 import time
 import json
+from logging import getLogger, INFO, StreamHandler, Formatter
+
+logger = getLogger(__name__)
+logger.setLevel(INFO)
+formatter = Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
+handler = StreamHandler()
+handler.setFormatter(formatter)
+handler.setLevel(INFO)
+logger.addHandler(handler)
 
 # 引数の音声ファイル(.wav)に対して、文字起こしした結果をテキストファイル(.txt)に出力する
 
@@ -15,12 +24,12 @@ NOTIFY_TIME_INTERVAL = 10
 def main(input_filename, output_filename, model_path):
     # モデルファイルのパス
     model = vosk.Model(model_path)
+    logger.info(f"Loaded Model: {model_path}")
 
     # 音声ファイルを開く
     wf = wave.open(input_filename, "rb")
+    logger.info(f"Open: {input_filename}")
     all_frames = wf.getnframes()
-    framerate = wf.getframerate()
-    total_seconds = all_frames / float(framerate)
 
     # 開始時間を記録
     start_time = time.time()
@@ -44,6 +53,7 @@ def main(input_filename, output_filename, model_path):
             text = json_dict["text"]
             if text != "":
                 results.append(text)
+                logger.debug(f"Result: {text}")
         # 進捗を表示
         last_notify_time = print_progress(read_frames, all_frames, start_time, last_notify_time)
 
@@ -51,6 +61,7 @@ def main(input_filename, output_filename, model_path):
     with open(output_filename, "w") as f:
         for result in results:
             f.write(result + "\n")
+    logger.info(f"Output to {output_filename}")
 
 def print_progress(read_frames, all_frames, start_time, last_notify_time):
     if read_frames > all_frames:
@@ -60,7 +71,7 @@ def print_progress(read_frames, all_frames, start_time, last_notify_time):
     current_time = time.time()
     elapsed_time = current_time - start_time
     progress = (read_frames / all_frames) * 100
-    print(f"[{elapsed_time:.1f}s] {progress:.2f}%")
+    logger.info(f"[{elapsed_time:.1f}s] {progress:.2f}%")
     return current_time
 
 
